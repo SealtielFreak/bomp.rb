@@ -172,13 +172,17 @@ module Bomp
 
     # Intermediate API
 
-    def query_point(args = {}) end
+    # querryPoint
+    def query_point(args = {}) raise NotImplementedError end
 
-    def query_rectangle(args = {}) end
+    # querryRecntangle
+    def query_rectangle(args = {}) raise NotImplementedError end
 
-    def query_segment(args = {}) end
+    # querrySegment
+    def query_segment(args = {}) raise NotImplementedError end
 
-    def query_segment_cords(*coords) end
+    # querrySegmentCords
+    def query_segment_cords(*coords) raise NotImplementedError end
 
     # Advanced API
 
@@ -200,16 +204,16 @@ module Bomp
     end
 
     # countCells
-    def count_cells() end
+    def count_cells() raise NotImplementedError end
 
     # toCell
-    def to_cell(x: 0, y: 0) end
+    def to_cell(x: 0, y: 0) raise NotImplementedError end
 
     # toWorld
-    def to_world(x: 0, y: 0) end
+    def to_world(x: 0, y: 0) raise NotImplementedError end
 
     # project
-    def project(item, args = {}) end
+    def project(item, args = {}) raise NotImplementedError end
 
     protected
 
