@@ -74,8 +74,16 @@ class Rect
 		@size.x
 	end
 
+	def width=(value)
+		@size.x = value
+	end
+
 	def height
 		@size.y
+	end
+
+	def height=(value)
+		@size.y = value
 	end
 
 	def top
@@ -176,7 +184,6 @@ module CollisionAABB
 		x, y = goal.to_a
 
 		if x != 0
-			item.position.x += x
 			if x > 0
 				other.right = item.left
 			elsif x < 0
@@ -185,7 +192,6 @@ module CollisionAABB
 		end
 
 		if y != 0
-			item.position.y += y
 			if y > 0
 				other.bottom = item.top
 			elsif y < 0
@@ -212,11 +218,13 @@ end
 module Bomp
 	module Auxiliary
 		class QuadNode < Rect
+			attr_reader :items
+
 			def initialize(x, y, w, h, args = {})
 				super(Vector2[x, y], Vector2[w, h])
-
-				@limit_w = (args[:limit_w] || 64).to_f
-				@limit_h = (args[:limit_w] || 64).to_f
+				limit = args[:limit_w] || 64, args[:limit_h] || 64
+				@limit_w = (limit[0]).to_f
+				@limit_h = (limit[1]).to_f
 				@limit = (args[:limit]) || 16
 
 				@items = []
@@ -250,9 +258,27 @@ module Bomp
 				@children.clear
 			end
 
+			def limit_size
+				[@limit_w, @limit_h]
+			end
+
+			def limit_size=(limit)
+				self.each { |c| c.limit_size = limit }
+			end
+
 			def each(&block)
-				@children.each { |child| child&.each(&block) }
+				@children.each { |c| c&.each(&block) }
 				block.call @items.clone unless @items.empty?
+			end
+
+			def each_children(&block)
+				@children.each { |c| c&.each_children(&block) }
+				block.call self unless @items.empty?
+			end
+
+			def each_children_by(item, &block)
+				@children.each { |c| c&.each_children_by(item, &block) }
+				block.call self if CollisionAABB.is_overlaps?(self, item) and not @items.empty?
 			end
 
 			def to_a
@@ -261,6 +287,14 @@ module Bomp
 				self.each { |item| items.push item }
 
 				items
+			end
+
+			def group_by(item)
+				children = []
+
+				self.each_children_by(item) { |c| children.push c.items }
+
+				children
 			end
 
 			private
@@ -306,10 +340,14 @@ module Bomp
 				@items -= [item]
 			end
 
-			def sort
-				reload!
+			def sort(group = nil, reload = true)
+				reload! if reload
 
-				@child.to_a
+				if group.nil?
+					@child.to_a
+				else
+					@child.group_by group
+				end
 			end
 
 			def clear!
@@ -373,19 +411,39 @@ module Bomp
 
 			item = self[item] if item.is_a? Integer
 			cols = []
-			all_sort_items = self.to_a
+
+			all_sort_items = @tree.sort
+
+			[Vector2[goal[0], 0], Vector2[0, goal[1]]].each do |g|
+				item.position += g
+
+				all_sort_items.each do |others|
+					next unless others.include? item
+
+					others -= [item]
+					cols += check_and_resolve item, g, others, filter
+				end
+			end
+
+			cols
+		end
+
+		def check(item, &filter)
+			filter = lambda { |a, b| :slide } if filter.nil?
+
+			item = self[item] if item.is_a? Integer
+			cols = []
+
+			all_sort_items = @tree.sort item
 
 			all_sort_items.each do |others|
 				next unless others.include? item
 
 				others -= [item]
-
-				[Vector2[goal[0], 0], Vector2[0, goal[1]]].each do |g|
-					cols += check_and_resolve item, g, others, filter
-				end
+				cols += check_and_resolve item, g, others, filter
 			end
 
-			cols.uniq
+			cols
 		end
 
 		private
@@ -414,8 +472,6 @@ module Bomp
 				if overlaps
 					res = filter.call item, other
 					@response[res]&.call item, other, goal
-				else
-					item.position += goal
 				end
 
 				col = generate_collision_info(item, other, goal, overlaps, res)
