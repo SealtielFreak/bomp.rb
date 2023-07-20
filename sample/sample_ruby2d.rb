@@ -14,20 +14,20 @@ def normalize(vec)
 	[x / length, y / length]
 end
 
-class DynamicObject < Rectangle
-	attr_reader :world, :col
+class MyRect < Rectangle
+	attr_reader :world, :rect
 
 	def initialize(world, **opts)
 		super **opts
 
 		@world = world
-		@col = Rect.new Vector2[0, 0], Vector2[opts[:width] || 0, opts[:height] || 0]
+		@rect = Rect.new Vector2[0, 0], Vector2[opts[:width] || 0, opts[:height] || 0]
 
-		@world.insert col
+		@world.add rect
 	end
 
 	def position
-		[@col.left, @col.top]
+		[@rect.left, @rect.top]
 	end
 
 	def position=(pos)
@@ -36,25 +36,26 @@ class DynamicObject < Rectangle
 		self.x = x
 		self.y = y
 
-		@col.left = x
-		@col.top = y
+		@rect.left = x
+		@rect.top = y
 	end
 
 	def size=(size)
 		w, h = size.to_a
 		self.width = w
 		self.height = h
-		@col.width = w
-		@col.height = h
+		@rect.width = w
+		@rect.height = h
 	end
 
 	def move(goal)
-		col = @world.move @col, normalize(goal)
+		rect, col = @world.move @rect, normalize(goal)
 
-		self.x = @col.x
-		self.y = @col.y
-		self.width = @col.width
-		self.height = @col.height
+		@rect = rect
+		self.x = @rect.x
+		self.y = @rect.y
+		self.width = @rect.width
+		self.height = @rect.height
 
 		col
 	end
@@ -62,8 +63,8 @@ end
 
 @world = World.new 640, 480
 
-@player = DynamicObject.new @world, color: 'red', width: 3, height: 3
-@walls = Array.new(5) { DynamicObject.new @world, color: 'random' }.map do |o|
+@player = MyRect.new @world, color: 'red', width: 3, height: 3
+@walls = Array.new(5) { MyRect.new @world, color: 'random' }.map do |o|
 	o.position = [rand(0..640), rand(0..480)]
 	o.size = [rand(5...25), rand(5...25)]
 end
@@ -82,16 +83,7 @@ on :key_held do |event|
 		goal.x += 5
 	end
 
-	cols = @player.move goal
-	puts cols.length
-
-	cols.each do |c|
-		puts c
-	end
-end
-
-update do
-
+	@player.move goal
 end
 
 show
