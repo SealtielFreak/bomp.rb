@@ -216,7 +216,61 @@ module Collisions
 end
 
 module Bomp
-	module Auxiliary
+	class ColliderSystem
+		attr_reader :items
+
+		def initialize
+			@items = []
+		end
+
+		def add(item)
+			@items.push item unless @items.include? item
+		end
+
+		def remove(item)
+			@items -= [item]
+		end
+
+		def sort(group = nil, reload = true)
+			raise NotImplementedError.new
+		end
+
+		def clear!
+			@items&.clear
+		end
+
+		def reload!
+			raise NotImplementedError.new
+		end
+
+		def restart!
+			raise NotImplementedError.new
+		end
+
+		def to_a
+			self.sort
+		end
+	end
+
+	class Lineal < ColliderSystem
+		def initialize
+			super
+		end
+
+		def sort(group = nil, reload = true)
+			[@items]
+		end
+
+		def clear!
+			@items&.clear
+		end
+
+		def reload!; end
+
+		def restart!; end
+	end
+
+	class QuadTree < ColliderSystem
 		class QuadNode < Rect
 			attr_reader :items
 
@@ -323,96 +377,83 @@ module Bomp
 			end
 		end
 
-		class QuadTree
-			attr_reader :child, :items
+		attr_reader :child
 
-			def initialize(width, height, **kwargs)
-				@args = kwargs
-				@child = QuadNode.new(0, 0, width, height, @args)
-				@items = []
+		def initialize(width, height, **opts)
+			super()
+			@opts = opts
+			@child = QuadNode.new(0, 0, width, height, @opts)
+		end
+
+		def sort(group = nil, reload = true)
+			reload! if reload
+
+			if group.nil?
+				@child.to_a
+			else
+				@child.group_by group
 			end
+		end
 
-			def add(item)
-				@items.push item unless @items.include? item
-			end
+		def reload!
+			@child&.clear
+			@items.each { |item| @child.insert item }
+		end
 
-			def remove(item)
-				@items -= [item]
-			end
-
-			def sort(group = nil, reload = true)
-				reload! if reload
-
-				if group.nil?
-					@child.to_a
-				else
-					@child.group_by group
-				end
-			end
-
-			def clear!
-				@child&.clear
-			end
-
-			def reload!
-				clear!
-				@items.each { |item| @child.insert item }
-			end
-
-			def restart!
-				clear!
-				@child = QuadNode.new(0, 0, width, height, @args)
-			end
+		def restart!
+			clear!
+			@child = QuadNode.new(0, 0, width, height, @opts)
 		end
 	end
 
 	class World
-		include Auxiliary
+		DEFAULT_FILTER = lambda { |a, b| :slide }
 
-		attr_reader :tree, :response, :filter
+		attr_reader :system_collision, :response
 
-		def initialize(width, height, **kwargs)
-			@tree = QuadTree.new(width, height, **kwargs)
+		def initialize(width, height, **opts)
+			@opts = opts
+			@system_collision = @opts[:system] || QuadTree.new(width, height, **opts)
 			@response = {
 				'bounce': lambda { |item, other, goal| CollisionAABB.bounce(item, other, goal) },
 				'cross': lambda { |item, other, goal| CollisionAABB.cross(item, other, goal) },
 				'touch': lambda { |item, other, goal| CollisionAABB.touch(item, other, goal) },
 				'slide': lambda { |item, other, goal| CollisionAABB.slide(item, other, goal) },
-				'push': lambda { |item, other, goal| CollisionAABB.push(item, other, goal) },
+				'push': lambda { |item, other, goal| CollisionAABB.push(item, other, goal) }
 			}
 		end
 
 		def insert(item)
-			@tree.add item
+			@system_collision&.add item
 		end
 
 		def delete(item)
-			@tree.remove item
+			@system_collision&.remove item
 		end
 
 		def [](index)
-			@tree.items.at index
+			@system_collision&.items[index]
 		end
 
 		def []=(index, item)
-			@tree.items[index] = item
+			@system_collision&.items[index] = item
 		end
 
 		def items
-			@tree.items
+			@system_collision&.items
 		end
 
 		def to_a
-			@tree.sort
+			@system_collision&.sort || []
 		end
 
 		def move(item, goal, &filter)
-			filter = lambda { |a, b| :slide } if filter.nil?
+			filter = DEFAULT_FILTER if filter.nil?
 
 			item = self[item] if item.is_a? Integer
 			cols = []
 
-			all_sort_items = @tree.sort
+			all_sort_items = @system_collision&.sort
 
 			[Vector2[goal[0], 0], Vector2[0, goal[1]]].each do |g|
 				item.position += g
@@ -429,12 +470,12 @@ module Bomp
 		end
 
 		def check(item, &filter)
-			filter = lambda { |a, b| :slide } if filter.nil?
+			filter = DEFAULT_FILTER if filter.nil?
 
 			item = self[item] if item.is_a? Integer
 			cols = []
 
-			all_sort_items = @tree.sort item
+			all_sort_items = @system_collision&.sort item
 
 			all_sort_items.each do |others|
 				next unless others.include? item

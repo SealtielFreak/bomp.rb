@@ -63,10 +63,9 @@ end
 @world = World.new 640, 480
 
 @player = DynamicObject.new @world, color: 'red', width: 3, height: 3
-@walls = Array.new(300) { DynamicObject.new @world, color: 'random' }.map do |o|
-	size = rand 15...25
+@walls = Array.new(5) { DynamicObject.new @world, color: 'random' }.map do |o|
 	o.position = [rand(0..640), rand(0..480)]
-	o.size = [size, size]
+	o.size = [rand(5...25), rand(5...25)]
 end
 
 on :key_held do |event|
@@ -84,7 +83,11 @@ on :key_held do |event|
 	end
 
 	cols = @player.move goal
-	puts cols
+	puts cols.length
+
+	cols.each do |c|
+		puts c
+	end
 end
 
 update do
