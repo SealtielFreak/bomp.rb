@@ -42,11 +42,15 @@ class Vector2
 	end
 
 	def to_s
-		"(#{@x}, #{@y})"
+		self.to_a.to_s
 	end
 
 	def to_a
 		[@x, @y]
+	end
+
+	def sum
+		@x + @y
 	end
 
 	def self.[](x, y)
@@ -118,6 +122,18 @@ class Rect
 		@position.x += value - self.right
 	end
 
+	def to_s
+		self.to_a.to_s
+	end
+
+	def clone
+		Rect.new([@position.x, @position.y], [@size.x, @size.y])
+	end
+
+	def to_a
+		[@position.x, @position.y, @size.x, @size.y]
+	end
+
 	def self.[](x, y, w, h)
 		Rect.new([x, y], [w, h])
 	end
@@ -133,7 +149,7 @@ module CollisionAABB
 	end
 
 	def self.is_overlaps?(a, b)
-		return was_vertical_aligned?(a, b) && was_horizontal_aligned?(a, b)
+		was_vertical_aligned?(a, b) && was_horizontal_aligned?(a, b)
 	end
 
 	def self.bounce(item, other, goal) end
@@ -297,7 +313,7 @@ module Bomp
 				return unless CollisionAABB.is_overlaps? self, item
 
 				subdivided unless subdivided?
-				@children.each { |child| child&.insert item }
+				@children.each { |child| child&.add item }
 
 				@items << item unless subdivided? && @items.size <= @limit
 			end
@@ -406,6 +422,30 @@ module Bomp
 		end
 	end
 
+	class CollisionInfo
+		attr_reader :item, :other, :goal, :overlaps, :response
+
+		def initialize(item, other, goal, overlaps, response)
+			@item = item
+			@other = other
+			@goal = goal
+			@overlaps = overlaps
+			@response = response
+			@normal = Vector2[
+				goal[0] <=> 0,
+				goal[1] <=> 0
+			]
+		end
+
+		def to_s
+			[@item, @other, @goal, @overlaps, @response, @normal].to_s
+		end
+
+		def self.[](*args)
+			CollisionInfo.new *args
+		end
+	end
+
 	class World
 		DEFAULT_FILTER = lambda { |a, b| :slide }
 
@@ -414,20 +454,19 @@ module Bomp
 		def initialize(width, height, **opts)
 			@opts = opts
 			@system_collision = @opts[:system] || QuadTree.new(width, height, **opts)
-			@response = {
-				'bounce': lambda { |item, other, goal| CollisionAABB.bounce(item, other, goal) },
-				'cross': lambda { |item, other, goal| CollisionAABB.cross(item, other, goal) },
-				'touch': lambda { |item, other, goal| CollisionAABB.touch(item, other, goal) },
-				'slide': lambda { |item, other, goal| CollisionAABB.slide(item, other, goal) },
-				'push': lambda { |item, other, goal| CollisionAABB.push(item, other, goal) }
-			}
+			@response = { 'bounce': lambda { |item, other, goal| CollisionAABB.bounce(item, other, goal) },
+			              'cross': lambda { |item, other, goal| CollisionAABB.cross(item, other, goal) },
+			              'touch': lambda { |item, other, goal| CollisionAABB.touch(item, other, goal) },
+			              'slide': lambda { |item, other, goal| CollisionAABB.slide(item, other, goal) },
+			              'push': lambda { |item, other, goal| CollisionAABB.push(item, other, goal) },
+			              'nothing': lambda { |item, other, goal| item } }
 		end
 
-		def insert(item)
+		def add(item)
 			@system_collision&.add item
 		end
 
-		def delete(item)
+		def remove(item)
 			@system_collision&.remove item
 		end
 
@@ -447,9 +486,29 @@ module Bomp
 			@system_collision&.sort || []
 		end
 
+		def include?(item)
+			items.include? item
+		end
+
+		def at(item)
+			add item unless include? item
+		end
+
+		def query_point(point, &filter)
+			_, cols = check Rect[point[0], point[1], 1, 1], &filter
+			cols
+		end
+
+		def query_rect(rect, &filter) end
+
+		def query_segment(p0, p1, filter) end
+
+		def add_response(name, &block)
+			@response[name.to_sym] = block
+		end
+
 		def move(item, goal, &filter)
 			filter = DEFAULT_FILTER if filter.nil?
-
 			item = self[item] if item.is_a? Integer
 			cols = []
 
@@ -466,57 +525,38 @@ module Bomp
 				end
 			end
 
-			cols
+			[item, cols]
 		end
 
 		def check(item, &filter)
 			filter = DEFAULT_FILTER if filter.nil?
-
 			item = self[item] if item.is_a? Integer
 			cols = []
 
-			all_sort_items = @system_collision&.sort item
+			all_sort_items = @system_collision&.sort
 
 			all_sort_items.each do |others|
 				next unless others.include? item
 
 				others -= [item]
-				cols += check_and_resolve item, g, others, filter
+				cols += check_and_resolve item, [0, 0], others, filter
 			end
 
-			cols
+			[item, cols]
 		end
 
 		private
-
-		def generate_collision_info(item, other, goal, overlaps, response)
-			{
-				item: item,
-				other: other,
-				goal: goal,
-				overlaps: overlaps,
-				response: response,
-				normal: Vector2[
-					goal[0] <=> 0,
-					goal[1] <=> 0
-				]
-			}
-		end
 
 		def check_and_resolve(item, goal, others, filter)
 			cols = []
 
 			others.each do |other|
 				overlaps = CollisionAABB.is_overlaps? item, other
-				res = nil
 
-				if overlaps
-					res = filter.call item, other
-					@response[res]&.call item, other, goal
-				end
+				res = filter.call(item, other) || :nothing
+				@response[res]&.call item, other, goal
 
-				col = generate_collision_info(item, other, goal, overlaps, res)
-				cols.push col
+				cols.push CollisionInfo[item, other, goal, overlaps, res]
 			end
 
 			cols
