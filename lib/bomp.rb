@@ -313,7 +313,7 @@ module Bomp
 				return unless CollisionAABB.is_overlaps? self, item
 
 				subdivided unless subdivided?
-				@children.each { |child| child&.add item }
+				@children.each { |child| child&.insert item }
 
 				@items << item unless subdivided? && @items.size <= @limit
 			end
@@ -552,9 +552,12 @@ module Bomp
 
 			others.each do |other|
 				overlaps = CollisionAABB.is_overlaps? item, other
+				res = :nothing
 
-				res = filter.call(item, other) || :nothing
-				@response[res]&.call item, other, goal
+				if overlaps and goal.sum != 0
+					res = filter.call(item, other) || :nothing
+					@response[res]&.call item, other, goal
+				end
 
 				cols.push CollisionInfo[item, other, goal, overlaps, res]
 			end
