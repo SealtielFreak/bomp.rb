@@ -224,6 +224,9 @@ module Bomp
 
     attr_reader :system_collision, :response
 
+    # Create world for collisions processing
+    # @param width [Integer] The first number
+    # @param height [Integer] The second number
     def initialize(width, height, **opts)
       @opts = opts
       @system_collision = @opts[:system] || QuadTree.new(width, height, **opts)
@@ -235,10 +238,12 @@ module Bomp
                     'nothing': lambda { |item, other, goal| item } }
     end
 
+    # @param [Rect] item Add item to world
     def add(item)
       @system_collision&.add item
     end
 
+    # @param [Rect] item Remove item from world
     def remove(item)
       @system_collision&.remove item
     end
