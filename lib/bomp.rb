@@ -8,40 +8,50 @@ module Bomp
   class ColliderSystem
     attr_reader :items
 
+    # Create collision system
     def initialize
       @items = []
     end
 
+    # @param [Rect] item Add item
     def add(item)
       @items.push item unless @items.include? item
     end
 
+    # @param [Rect] item Remove item
     def remove(item)
       @items -= [item]
     end
 
+    # Sort all items
     def sort(group = nil, reload = true)
       raise NotImplementedError.new
     end
 
+    # Clean
     def clear!
       @items&.clear
     end
 
+    # Reload
     def reload!
       raise NotImplementedError.new
     end
 
+    # Restart
     def restart!
       raise NotImplementedError.new
     end
 
+    # Cast to array
+    # @return [Array]
     def to_a
       self.sort
     end
   end
 
   class Lineal < ColliderSystem
+    # Initialize lineal collision system
     def initialize
       super
     end
@@ -238,53 +248,87 @@ module Bomp
                     'nothing': lambda { |item, other, goal| item } }
     end
 
+    # Add item to world
     # @param [Rect] item Add item to world
     def add(item)
       @system_collision&.add item
     end
 
+    # Remove item from world
     # @param [Rect] item Remove item from world
     def remove(item)
       @system_collision&.remove item
     end
 
+    # Select item from world
+    # @param [Rect] index Index
     def [](index)
       @system_collision&.items[index]
     end
 
+    # @param [Integer] index
+    # @param [Rect] item
     def []=(index, item)
       @system_collision&.items[index] = item
     end
 
+    # @return [Array, nil]
     def items
       @system_collision&.items
     end
 
+    # Cast to array
+    # @return [Array]
     def to_a
       @system_collision&.sort || []
     end
 
+    # Check if item include in world
+    # @param [Rect] item Check if include item
     def include?(item)
       items.include? item
     end
 
+    # At item
+    # @param [Rect] item
     def at(item)
       add item unless include? item
     end
 
+    # Query point
+    # @param [Vector2] point
+    # @param [Proc] filter
     def query_point(point, &filter)
       _, cols = check Rect[point[0], point[1], 1, 1], &filter
       cols
     end
 
-    def query_rect(rect, &filter) end
+    # Query rect
+    # @param [Rect] rect
+    # @param [Proc] filter
+    def query_rect(rect, &filter)
+      raise NotImplementedError.new
+    end
 
-    def query_segment(p0, p1, filter) end
+    # Query segment
+    # @param [Vector2] p0
+    # @param [Vector2] p1
+    # @param [Proc] filter
+    def query_segment(p0, p1, &filter)
+      raise NotImplementedError.new
+    end
 
+    # Add response
+    # @param [String] name
     def add_response(name, &block)
       @response[name.to_sym] = block
     end
 
+    # Move item in the world
+    # @param [Rect] item
+    # @param [Vector2] goal
+    # @param [Proc] filter
+    # @return [[Rect, Array]]
     def move(item, goal, &filter)
       filter = DEFAULT_FILTER if filter.nil?
       item = self[item] if item.is_a? Integer
@@ -306,6 +350,10 @@ module Bomp
       [item, cols]
     end
 
+    # Check
+    # @param [Rect] item
+    # @param [Proc] filter
+    # @return [[Rect, Array]]
     def check(item, &filter)
       filter = DEFAULT_FILTER if filter.nil?
       item = self[item] if item.is_a? Integer
@@ -325,6 +373,12 @@ module Bomp
 
     private
 
+    # Check and resolve
+    # @param [Rect] item
+    # @param [Vector2] goal
+    # @param [Array] others
+    # @param [Object] filter
+    # @return [Array]
     def check_and_resolve(item, goal, others, filter)
       cols = []
 
