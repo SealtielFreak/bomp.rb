@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.authors     = 'SealtielFreak'
   s.email       = 'SealtielFreak@yandex.com'
   s.files         = Dir['**/**'].grep_v(/.gem$/)
-  s.require_paths = ["lib"]
+  s.require_paths = %w[lib sample]
   s.homepage    = 'https://github.com/SealtielFreak/bomp.rb'
   s.license     = 'MIT'
   s.required_ruby_version = '>= 2.5.0'
