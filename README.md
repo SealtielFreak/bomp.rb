@@ -11,19 +11,27 @@ A collision detection library for Ruby, works in [Ruby2D](https://github.com/rub
 
 A collision detection library for Ruby that makes it easy to detect collisions between 2D objects in your game or application. The library implements two popular collision detection algorithms AABB and SAT.
 
+## Documentation
+You can consult the documentation for this library in [rubydoc.info](https://www.rubydoc.info/gems/bomp/index).
+
 ## Installation
 
-Ensure you have the latest versions of [Ruby](https://www.ruby-lang.org/) and [Gem](https://rubygems.org/pages/download) installed on your system to work with containerization.
+### Installation from terminal
 
-### Initial Setup
+```shell
+gem install bomp
+```
+Ensure you have the latest versions of [Ruby](https://www.ruby-lang.org/) and [Gem](https://rubygems.org/pages/download) installed on your system.
+
+### Installation from source code
 
 1. **Clone the Repository**:
-```
+```shell
 git clone https://github.com/sealtielfreak/bomp.rb.git
 cd bomp.rb
 ```
 2. **Install Gemfile**:
-- Follow the instructions at [Install gems](https://www.bacancytechnology.com/blog/install-ruby-gems).
+   - Follow the instructions at [Install gems](https://www.bacancytechnology.com/blog/install-ruby-gems).
 
 ## Contributing
 
