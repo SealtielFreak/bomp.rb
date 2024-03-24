@@ -371,14 +371,13 @@ module Bomp
       [item, cols]
     end
 
-    private
-
     # Check and resolve
     # @param [Rect] item
     # @param [Vector2] goal
     # @param [Array] others
     # @param [Object] filter
     # @return [Array]
+    private
     def check_and_resolve(item, goal, others, filter)
       cols = []
 
