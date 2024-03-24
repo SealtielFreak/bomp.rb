@@ -372,7 +372,6 @@ module Bomp
     end
 
     private
-
     # Check and resolve
     # @param [Rect] item
     # @param [Vector2] goal
