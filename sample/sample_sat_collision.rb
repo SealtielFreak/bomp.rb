@@ -4,21 +4,13 @@ require 'bomp'
 
 include Bomp
 
-world = World.new 640, 480
-quad = Polygon::quad [0, 0], 0
+quad0 = Polygon.new [[0, 0], [1, 0], [1, 1]]
+quad1 = Polygon.new [[0, 0], [1, 0], [1, 1]]
 
-world.add(Rect[0, 0, 10, 10])
-world.add(Rect[2, 3, 10, 10])
-world.add(Rect[300, 300, 10, 10])
+quad1.translate [0.001, 1]
 
-puts 'Current position: ' + world[0].position.to_s
-cols = world.move(0, Vector2[3, -1]) do |item, other|
-  puts 'Other collision is ' + other.to_s
-  :push
-end
+col = CollisionSAT.is_overlaps? quad0, quad1
 
-puts 'Current position: ' + world[0].position.to_s
-
-cols.each do |col|
-  puts 'Collision: ' + col.to_s
-end
+puts col.to_s
+puts col.sum
+puts col.sum == 0
