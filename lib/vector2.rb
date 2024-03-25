@@ -27,17 +27,31 @@ module Bomp
     end
 
     # Multiply Operator
-    # @param [Integer] scalar
+    # @param [Integer, Array, Bomp::Vector2] scalar
     # @return [Bomp::Vector2]
     def *(scalar)
-      Vector2[@x * scalar, @y * scalar]
+      if compatibility? other
+        Vector2[@x * scalar[0], @y * scalar[1]]
+      else
+        Vector2[@x * scalar, @y * scalar]
+      end
     end
 
     # Division Operator
     # @param [Integer] scalar
     # @return [Bomp::Vector2]
     def /(scalar)
-      Vector2[@x / scalar, @y / scalar]
+      if compatibility? scalar
+        Vector2[@x / scalar[0], @y / scalar[1]]
+      else
+        Vector2[@x / scalar, @y / scalar]
+      end
+    end
+
+    # Check if compatibility
+    # @return [TrueClass, FalseClass]
+    def compatibility?(other)
+      [Array, Vector2].include? other.class
     end
 
     # Equals Operator
@@ -85,6 +99,19 @@ module Bomp
     # @return [Integer]
     def sum
       @x + @y
+    end
+
+    # Get length
+    # @return [Integer]
+    def length
+      2
+    end
+
+    # Get dot product
+    # @param [[Integer, Integer], Vector2] other
+    # @return [Integer]
+    def dot(other)
+      x * other[0] + y * other[1]
     end
 
     # Create vector 2d like array
