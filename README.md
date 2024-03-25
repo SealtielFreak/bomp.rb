@@ -9,7 +9,9 @@ A collision detection library for Ruby, works in [Ruby2D](https://github.com/rub
 
 ## Introduction
 
-A collision detection library for Ruby that makes it easy to detect collisions between 2D objects in your game or application. The library implements two popular collision detection algorithms AABB and SAT.
+A collision detection library for Ruby that makes it easy to detect collisions between 2D objects in your game or application. The library implements two popular collision detection algorithms AABB and SAT. 
+
+You can review the [test](https://github.com/SealtielFreak/experimental-collisions.rb) and [results](https://youtu.be/S6Me8Wy-G68) of this optimization.
 
 ## Documentation
 You can consult the documentation for this library in [rubydoc.info](https://www.rubydoc.info/gems/bomp/index), or you can generate the documentation with [rdoc](https://github.com/ruby/rdoc).
