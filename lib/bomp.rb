@@ -223,6 +223,7 @@ module Bomp
     # Get all the items ordered by section
     # @param [nil] group
     # @param [TrueClass, FalseClass] reload
+    # @return [Array]
     def sort(group = nil, reload = true)
       reload! if reload
 
@@ -373,7 +374,7 @@ module Bomp
     end
 
     # Move item in the world, get all collisions and resolve
-    # @param [Bomp::Rect] item
+    # @param [Bomp::Rect, Integer] item
     # @param [Bomp::Vector2] goal
     # @param [Proc] filter
     # @return [[Bomp::Rect, Array]]
