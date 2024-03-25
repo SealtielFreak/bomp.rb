@@ -15,13 +15,13 @@ module Bomp
     end
 
     # Add item to system
-    # @param [Rect] item
+    # @param [Bomp::Rect] item
     def add(item)
       @items.push item unless @items.include? item
     end
 
     # Remove item to system
-    # @param [Rect] item Remove item
+    # @param [Bomp::Rect] item Remove item
     def remove(item)
       @items -= [item]
     end
@@ -102,7 +102,7 @@ module Bomp
       end
 
       # Insert new element
-      # @param [Rect] item
+      # @param [Bomp::Rect] item
       # @return [Array]
       def insert(item)
         return unless CollisionAABB.is_overlaps? self, item
@@ -132,7 +132,7 @@ module Bomp
       end
 
       # Set limit size of quad tree
-      # @param [Object] limit
+      # @param [Integer] limit
       def limit_size=(limit)
         self.each { |c| c.limit_size = limit }
       end
@@ -150,7 +150,7 @@ module Bomp
       end
 
       # Each all children by item
-      # @param [Rect] item
+      # @param [Bomp::Rect] item
       def each_children_by(item, &block)
         @children.each { |c| c&.each_children_by(item, &block) }
         block.call self if CollisionAABB.is_overlaps?(self, item) and not @items.empty?
@@ -167,7 +167,7 @@ module Bomp
       end
 
       # Group by item
-      # @param [Rect] item
+      # @param [Bomp::Rect] item
       def group_by(item)
         children = []
 
@@ -250,9 +250,9 @@ module Bomp
     attr_reader :item, :other, :goal, :overlaps, :response
 
     # Initialize collision info for items
-    # @param [Rect] item
-    # @param [Rect] other
-    # @param [Vector2] goal
+    # @param [Bomp::Rect] item
+    # @param [Bomp::Rect] other
+    # @param [Bomp::Vector2] goal
     # @param [Object] overlaps
     # @param [Object] response
     def initialize(item, other, goal, overlaps, response)
@@ -297,25 +297,25 @@ module Bomp
     end
 
     # Add item to world
-    # @param [Rect] item Add item to world
+    # @param [Bomp::Rect] item Add item to world
     def add(item)
       @system_collision&.add item
     end
 
     # Remove item from world
-    # @param [Rect] item Remove item from world
+    # @param [Bomp::Rect] item Remove item from world
     def remove(item)
       @system_collision&.remove item
     end
 
     # Select item from world
-    # @param [Rect] index Index
+    # @param [Bomp::Rect] index Index
     def [](index)
       @system_collision&.items[index]
     end
 
     # @param [Integer] index
-    # @param [Rect] item
+    # @param [Bomp::Rect] item
     def []=(index, item)
       @system_collision&.items[index] = item
     end
@@ -332,19 +332,19 @@ module Bomp
     end
 
     # Check if item include in world
-    # @param [Rect] item Check if include item
+    # @param [Bomp::Rect] item Check if include item
     def include?(item)
       items.include? item
     end
 
     # At item
-    # @param [Rect] item
+    # @param [Bomp::Rect] item
     def at(item)
       add item unless include? item
     end
 
     # Query point
-    # @param [Vector2] point
+    # @param [Bomp::Vector2] point
     # @param [Proc] filter
     def query_point(point, &filter)
       _, cols = check Rect[point[0], point[1], 1, 1], &filter
@@ -352,15 +352,15 @@ module Bomp
     end
 
     # Query rect
-    # @param [Rect] rect
+    # @param [Bomp::Rect] rect
     # @param [Proc] filter
     def query_rect(rect, &filter)
       raise NotImplementedError.new
     end
 
     # Query segment
-    # @param [Vector2] p0
-    # @param [Vector2] p1
+    # @param [Bomp::Vector2] p0
+    # @param [Bomp::Vector2] p1
     # @param [Proc] filter
     def query_segment(p0, p1, &filter)
       raise NotImplementedError.new
@@ -373,10 +373,10 @@ module Bomp
     end
 
     # Move item in the world
-    # @param [Rect] item
-    # @param [Vector2] goal
+    # @param [Bomp::Rect] item
+    # @param [Bomp::Vector2] goal
     # @param [Proc] filter
-    # @return [[Rect, Array]]
+    # @return [[Bomp::Rect, Array]]
     def move(item, goal, &filter)
       filter = DEFAULT_FILTER if filter.nil?
       item = self[item] if item.is_a? Integer
@@ -399,9 +399,9 @@ module Bomp
     end
 
     # Check
-    # @param [Rect] item
+    # @param [Bomp::Rect] item
     # @param [Proc] filter
-    # @return [[Rect, Array]]
+    # @return [[Bomp::Rect, Array]]
     def check(item, &filter)
       filter = DEFAULT_FILTER if filter.nil?
       item = self[item] if item.is_a? Integer
@@ -420,8 +420,8 @@ module Bomp
     end
 
     # Check and resolve
-    # @param [Rect] item
-    # @param [Vector2] goal
+    # @param [Bomp::Rect] item
+    # @param [Bomp::Vector2] goal
     # @param [Array] others
     # @param [Object] filter
     # @return [Array]
