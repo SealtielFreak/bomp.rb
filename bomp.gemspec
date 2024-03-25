@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'bomp'
-  s.version     = '1.0.5.1'
+  s.version     = '1.0.5.1.2'
   s.summary     = 'A collision detection library for Ruby'
   s.description = "Ruby collision-detection library for axis-aligned rectangles, inspired by 'bump.lua' but using native Ruby capabilities"
   s.authors     = 'SealtielFreak'

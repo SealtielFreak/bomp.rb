@@ -60,7 +60,6 @@ module Bomp
       @position.y = value
     end
 
-
     # Get top
     # @return [Integer]
     def bottom

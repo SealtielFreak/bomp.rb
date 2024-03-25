@@ -425,7 +425,9 @@ module Bomp
     # @param [Array] others
     # @param [Object] filter
     # @return [Array]
+
     private
+
     def check_and_resolve(item, goal, others, filter)
       cols = []
 
