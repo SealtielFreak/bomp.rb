@@ -25,13 +25,11 @@ Ensure you have the latest versions of [Ruby](https://www.ruby-lang.org/) and [G
 
 ### Installation from source code
 
-1. **Clone the Repository**:
 ```shell
 git clone https://github.com/sealtielfreak/bomp.rb.git
 cd bomp.rb
 ```
-2. **Install Gemfile**:
-   - Follow the instructions at [Install gems](https://www.bacancytechnology.com/blog/install-ruby-gems).
+Follow the instructions at [Install gems](https://www.bacancytechnology.com/blog/install-ruby-gems).
 
 ## Contributing
 
