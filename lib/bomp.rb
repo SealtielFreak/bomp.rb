@@ -372,7 +372,7 @@ module Bomp
       @response[name.to_sym] = block
     end
 
-    # Move item in the world
+    # Move item in the world, get all collisions and resolve
     # @param [Bomp::Rect] item
     # @param [Bomp::Vector2] goal
     # @param [Proc] filter
@@ -398,7 +398,7 @@ module Bomp
       [item, cols]
     end
 
-    # Check
+    # Check item and get all collisions
     # @param [Bomp::Rect] item
     # @param [Proc] filter
     # @return [[Bomp::Rect, Array]]
