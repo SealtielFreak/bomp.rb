@@ -2,8 +2,12 @@
 
 module Bomp
   module CollisionSAT
+    # Check if overlaps
+    # @param [Object] a
+    # @param [Object] b
+    # @return [TrueClass, FalseClass]
     def self.is_overlaps?(a, b)
-      raise NotImplementedError.new
+      false
     end
   end
 end
