@@ -1,8 +1,9 @@
 require_relative 'vector2'
 require_relative 'rect'
-require_relative 'collision/collision_aabb'
-require_relative 'collision/collision_sat'
-require_relative 'collision/collisions'
+require_relative 'polygon'
+require_relative 'collision_aabb'
+require_relative 'collision_sat'
+require_relative 'collisions'
 
 module Bomp
   # Class interface of Collider system
@@ -283,7 +284,7 @@ module Bomp
 
     attr_reader :system_collision, :response
 
-    # Create world for collisions processing
+    # Create world for collisions AABB processing
     # @param width [Integer] The first number
     # @param height [Integer] The second number
     def initialize(width, height, **opts)

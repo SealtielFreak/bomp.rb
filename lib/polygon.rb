@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative 'collision_sat'
 require_relative 'vector2'
 
 module Bomp
@@ -56,7 +57,7 @@ module Bomp
     # @param [[Integer, Integer], Bomp::Vector] position
     # @param [Integer, Float] size
     # @return [Bomp::Polygon]
-    def self.quad(position, size)
+    def Polygon.quad(position, size)
       x, y = position[0], position[1]
       w = h = size
 

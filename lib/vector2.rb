@@ -5,8 +5,8 @@ module Bomp
     attr_accessor :x, :y
 
     # Initialize vector 2d
-    # @param [Integer] x
-    # @param [Integer] y
+    # @param [Integer, Float] x
+    # @param [Integer, Float] y
     def initialize(x, y)
       @x = x
       @y = y
@@ -30,7 +30,7 @@ module Bomp
     # @param [Integer, Array, Bomp::Vector2] scalar
     # @return [Bomp::Vector2]
     def *(scalar)
-      if compatibility? other
+      if compatibility? scalar
         Vector2[@x * scalar[0], @y * scalar[1]]
       else
         Vector2[@x * scalar, @y * scalar]
@@ -90,7 +90,7 @@ module Bomp
     end
 
     # Cast to array
-    # @return [[Integer, Integer]]
+    # @return [[Integer, Integer], [Float, Float]]
     def to_a
       [@x, @y]
     end
@@ -115,10 +115,25 @@ module Bomp
     end
 
     # Create vector 2d like array
-    # @param [Integer] x
-    # @param [Integer] y
+    # @param [Integer, Float] x
+    # @param [Integer, Float] y
     # @return [Bomp::Vector2]
     def self.[](x, y)
+      Vector2.new(x, y)
+    end
+
+    # Create vector 2d from array
+    # @param [Array, [Integer, Integer], [Float, Float]] arr
+    # @return [Bomp::Vector2]
+    def self.from(*args)
+      x = y = 0
+
+      if args.is_a? Array
+        x, y = args.first
+      else
+        x, y = args
+      end
+
       Vector2.new(x, y)
     end
   end

@@ -1,29 +1,14 @@
 # frozen_string_literal: true
 
-require_relative '../vector2'
-
+require_relative 'vector2'
+require_relative 'math'
 
 module Bomp
   module CollisionSAT
     INF = Float::INFINITY
 
-    # Get median
-    # @param [Array, Bomp::Vector2] points
-    # @return [Bomp::Vector2]
-    def self.median(points)
-      origin = Vector2[0.0, 0.0]
-
-      points.each do |vec|
-        raise ArgumentError unless [Vector2, Array].include? vec.class
-
-        origin += vec
-      end
-
-      origin / points.length
-    end
-
     def self.center_displacement(points_a, points_b)
-      self.median(points_b) - self.median(points_a)
+      median(points_b) - median(points_a)
     end
 
     def self.edges_of(points)
@@ -90,8 +75,9 @@ module Bomp
     # Check if overlaps
     # @param [Bomp::Polygon] a
     # @param [Bomp::Polygon] b
+    # @return [TrueClass, FalseClass]
     def self.is_overlaps?(a, b)
-      CollisionSAT.collision? a.points, b.points
+      CollisionSAT.collision?(a.points, b.points).sum != 0
     end
   end
 end
