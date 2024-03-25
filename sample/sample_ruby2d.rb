@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 require 'ruby2d'
+require 'bomp'
 
-require_relative '../lib/bomp'
 include Bomp
 
 
