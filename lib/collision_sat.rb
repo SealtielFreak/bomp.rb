@@ -5,6 +5,7 @@ require_relative 'math'
 
 module Bomp
   module CollisionSAT
+    # SAT Collision reference from site: https://hackmd.io/@US4ofdv7Sq2GRdxti381_A/ryFmIZrsl
     INF = Float::INFINITY
 
     def self.center_displacement(points_a, points_b)
