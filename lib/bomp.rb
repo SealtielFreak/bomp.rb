@@ -5,6 +5,7 @@ require_relative 'collision/collision_sat'
 require_relative 'collision/collisions'
 
 module Bomp
+  # Class interface of Collider system
   class ColliderSystem
     attr_reader :items
 
@@ -13,49 +14,51 @@ module Bomp
       @items = []
     end
 
-    # @param [Rect] item Add item
+    # Add item to system
+    # @param [Rect] item
     def add(item)
       @items.push item unless @items.include? item
     end
 
+    # Remove item to system
     # @param [Rect] item Remove item
     def remove(item)
       @items -= [item]
     end
 
-    # Sort all items
+    # Organize all elements in an optimized way
+    # @param [nil] group
+    # @param [TrueClass] reload
     def sort(group = nil, reload = true)
       raise NotImplementedError.new
     end
 
-    # Clean
+    # Clean all items (Remove from list)
     def clear!
       @items&.clear
     end
 
-    # Reload
-    def reload!
-      raise NotImplementedError.new
-    end
+    # Reload all items
+    def reload!; end
 
-    # Restart
-    def restart!
-      raise NotImplementedError.new
-    end
+    # Restart items
+    def restart!; end
 
-    # Cast to array
+    # Organize all elements in an optimized way
     # @return [Array]
     def to_a
       self.sort
     end
   end
 
+  # Class like ColliderSystem for lineal system optimization
   class Lineal < ColliderSystem
     # Initialize lineal collision system
     def initialize
       super
     end
 
+    # Get all items
     def sort(group = nil, reload = true)
       [@items]
     end
@@ -63,16 +66,18 @@ module Bomp
     def clear!
       @items&.clear
     end
-
-    def reload!; end
-
-    def restart!; end
   end
 
   class QuadTree < ColliderSystem
     class QuadNode < Rect
       attr_reader :items
 
+      # Initialize quad node for collision optimization
+      # @param [Integer] x
+      # @param [Integer] y
+      # @param [Integer] w
+      # @param [Integer] h
+      # @param [Hash] args
       def initialize(x, y, w, h, args = {})
         super(Vector2[x, y], Vector2[w, h])
         limit = args[:limit_w] || 64, args[:limit_h] || 64
@@ -84,14 +89,21 @@ module Bomp
         @children = []
       end
 
+      # Check if empty
+      # @return [TrueClass, FalseClass]
       def empty?
         @items.empty?
       end
 
+      # Check if subdivided
+      # @return [TrueClass, FalseClass]
       def subdivided?
         !@children.empty?
       end
 
+      # Insert new element
+      # @param [Rect] item
+      # @return [Array]
       def insert(item)
         return unless CollisionAABB.is_overlaps? self, item
 
@@ -101,39 +113,51 @@ module Bomp
         @items << item unless subdivided? && @items.size <= @limit
       end
 
+      # Clean all items (Remove from list)
       def clear
         @children.each { |child| child&.clear }
         @items.clear
       end
 
+      # Release items from quad tree
       def release
         @children.each { |child| child&.release }
         @children.clear
       end
 
+      # Get limit size of quad tree
+      # @return [[Float, Float]]
       def limit_size
         [@limit_w, @limit_h]
       end
 
+      # Set limit size of quad tree
+      # @param [Object] limit
       def limit_size=(limit)
         self.each { |c| c.limit_size = limit }
       end
 
+      # Each items
       def each(&block)
         @children.each { |c| c&.each(&block) }
         block.call @items.clone unless @items.empty?
       end
 
+      # Each all children
       def each_children(&block)
         @children.each { |c| c&.each_children(&block) }
         block.call self unless @items.empty?
       end
 
+      # Each all children by item
+      # @param [Rect] item
       def each_children_by(item, &block)
         @children.each { |c| c&.each_children_by(item, &block) }
         block.call self if CollisionAABB.is_overlaps?(self, item) and not @items.empty?
       end
 
+      # Get all the items ordered by section
+      # @return [Array]
       def to_a
         items = []
 
@@ -142,6 +166,8 @@ module Bomp
         items
       end
 
+      # Group by item
+      # @param [Rect] item
       def group_by(item)
         children = []
 
@@ -152,6 +178,8 @@ module Bomp
 
       private
 
+      # Subdivide quad tree
+      # @return [[Bomp::QuadTree::QuadNode, Bomp::QuadTree::QuadNode, Bomp::QuadTree::QuadNode, Bomp::QuadTree::QuadNode]]
       def subdivided
         x = self.x
         y = self.y
@@ -168,6 +196,11 @@ module Bomp
         ]
       end
 
+      # Config child
+      # @param [Integer] x
+      # @param [Integer] y
+      # @param [Integer] w
+      # @param [Integer] h
       def config_child(x, y, w, h)
         [x, y, w, h, {
           limit_w: @limit_w, limit_h: @limit_h,
@@ -178,12 +211,18 @@ module Bomp
 
     attr_reader :child
 
+    # Initialize quad tree for collision optimization
+    # @param [Integer] width
+    # @param [Integer] height
     def initialize(width, height, **opts)
       super()
       @opts = opts
       @child = QuadNode.new(0, 0, width, height, @opts)
     end
 
+    # Get all the items ordered by section
+    # @param [nil] group
+    # @param [TrueClass, FalseClass] reload
     def sort(group = nil, reload = true)
       reload! if reload
 
@@ -194,11 +233,13 @@ module Bomp
       end
     end
 
+    # Reload items
     def reload!
       @child&.clear
       @items.each { |item| @child.insert item }
     end
 
+    # Reset all children
     def restart!
       clear!
       @child = QuadNode.new(0, 0, width, height, @opts)
@@ -208,6 +249,12 @@ module Bomp
   class CollisionInfo
     attr_reader :item, :other, :goal, :overlaps, :response
 
+    # Initialize collision info for items
+    # @param [Rect] item
+    # @param [Rect] other
+    # @param [Vector2] goal
+    # @param [Object] overlaps
+    # @param [Object] response
     def initialize(item, other, goal, overlaps, response)
       @item = item
       @other = other
@@ -220,6 +267,7 @@ module Bomp
       ]
     end
 
+    # Get string of info
     def to_s
       [@item, @other, @goal, @overlaps, @response, @normal].to_s
     end
