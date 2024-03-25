@@ -62,11 +62,11 @@ module Bomp
       w = h = size
 
       Polygon.new [
-        [x, y],
-        [x, y + h],
-        [x + w, y + h],
-        [x + w, y]
-      ]
+                    [x, y],
+                    [x, y + h],
+                    [x + w, y + h],
+                    [x + w, y]
+                  ]
     end
   end
 end
