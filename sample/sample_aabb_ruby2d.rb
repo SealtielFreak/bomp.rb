@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'ruby2d'
-require 'bomp'
+require_relative '../lib/bomp'
 
 include Bomp
 
@@ -61,13 +61,15 @@ class MyRect < Rectangle
 	end
 end
 
-@world = World.new 640, 480, limit_size: 100
+@world = World.new 640, 480, limit_size: 10
 
-@player = MyRect.new @world, color: 'red', width: 10, height: 10
-@walls = Array.new(100) { MyRect.new @world, color: 'random' }.map do |o|
+@player = MyRect.new @world, color: 'red', width: 5, height: 5
+@walls = Array.new(25) { MyRect.new @world, color: 'random' }.map do |o|
 	o.position = [rand(0..640), rand(0..480)]
 	o.size = [rand(25...100), rand(25...100)]
 end
+
+set background: 'white'
 
 on :key_held do |event|
 	goal = Vector2[0, 0]
@@ -85,7 +87,13 @@ on :key_held do |event|
 
 	cols = @player.move goal, 2.5
 
-	puts cols
+	next if cols.empty?
+
+	puts "Collisions: #{cols.length}"
+
+	cols.each_with_index do |col, i|
+		puts col.to_h
+	end
 end
 
 show

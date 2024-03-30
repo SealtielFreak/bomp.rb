@@ -30,6 +30,7 @@ module Bomp
     # Organize all elements in an optimized way
     # @param [nil] group
     # @param [TrueClass] reload
+    # @return [Array]
     def sort(group = nil, reload = true)
       raise NotImplementedError.new
     end
@@ -60,6 +61,7 @@ module Bomp
     end
 
     # Get all items
+    # @return [Array]
     def sort(group = nil, reload = true)
       [@items]
     end
@@ -280,6 +282,12 @@ module Bomp
     def self.[](*args)
       CollisionInfo.new *args
     end
+
+    def to_h
+      {
+        item: @item, other: @other, overlaps: @overlaps, response: @response, normal: @normal
+      }
+    end
   end
 
   class World
@@ -412,7 +420,7 @@ module Bomp
       item = self[item] if item.is_a? Integer
       cols = []
 
-      all_sort_items = @system_collision&.sort
+      all_sort_items = @system_collision.sort
 
       all_sort_items.each do |others|
         next unless others.include? item
@@ -443,9 +451,9 @@ module Bomp
         if overlaps and goal.sum != 0
           res = filter.call(item, other) || :nothing
           @response[res]&.call item, other, goal
-
-          cols.push CollisionInfo[item, other, goal, overlaps, res]
         end
+
+        cols.push CollisionInfo[item, other, goal, overlaps, res]
       end
 
       cols
