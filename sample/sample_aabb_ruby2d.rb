@@ -11,7 +11,7 @@ def normalize(vec)
 
 	length = Math.sqrt(x ** 2 + y ** 2)
 
-	[x / length, y / length]
+	Vector2[x / length, y / length]
 end
 
 class MyRect < Rectangle
@@ -48,8 +48,8 @@ class MyRect < Rectangle
 		@rect.height = h
 	end
 
-	def move(goal)
-		rect, col = @world.move @rect, normalize(goal)
+	def move(goal, speed = Vector2[1, 1])
+		rect, col = @world.move(@rect, normalize(goal) * speed)
 
 		@rect = rect
 		self.x = @rect.x
@@ -61,10 +61,10 @@ class MyRect < Rectangle
 	end
 end
 
-@world = World.new 640, 480
+@world = World.new 640, 480, limit_size: 100
 
-@player = MyRect.new @world, color: 'red', width: 3, height: 3
-@walls = Array.new(50) { MyRect.new @world, color: 'random' }.map do |o|
+@player = MyRect.new @world, color: 'red', width: 10, height: 10
+@walls = Array.new(100) { MyRect.new @world, color: 'random' }.map do |o|
 	o.position = [rand(0..640), rand(0..480)]
 	o.size = [rand(25...100), rand(25...100)]
 end
@@ -74,16 +74,18 @@ on :key_held do |event|
 
 	case event.key
 	when 'w'
-		goal.y -= 5
+		goal.y -= 1
 	when 's'
-		goal.y += 5
+		goal.y += 1
 	when 'a'
-		goal.x -= 5
+		goal.x -= 1
 	when 'd'
-		goal.x += 5
+		goal.x += 1
 	end
 
-	@player.move goal
+	cols = @player.move goal, 2.5
+
+	puts cols
 end
 
 show

@@ -81,10 +81,11 @@ module Bomp
       # @param [Hash] args
       def initialize(x, y, w, h, args = {})
         super(Vector2[x, y], Vector2[w, h])
-        limit = args[:limit_w] || 64, args[:limit_h] || 64
+        limit = args[:limit_size] || 64, args[:limit_size] || 64
+
         @limit_w = (limit[0]).to_f
         @limit_h = (limit[1]).to_f
-        @limit = (args[:limit]) || 16
+        @limit_items = args[:limit_items]
 
         @items = []
         @children = []
@@ -111,7 +112,9 @@ module Bomp
         subdivided unless subdivided?
         @children.each { |child| child&.insert item }
 
-        @items << item unless subdivided? && @items.size <= @limit
+        max_limit = if @limit_items.nil? then true else @items.size <= @limit_items end
+
+        @items << item unless subdivided? && max_limit
       end
 
       # Clean all items (Remove from list)
@@ -440,9 +443,9 @@ module Bomp
         if overlaps and goal.sum != 0
           res = filter.call(item, other) || :nothing
           @response[res]&.call item, other, goal
-        end
 
-        cols.push CollisionInfo[item, other, goal, overlaps, res]
+          cols.push CollisionInfo[item, other, goal, overlaps, res]
+        end
       end
 
       cols
